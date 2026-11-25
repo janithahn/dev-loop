@@ -1,0 +1,21 @@
+# The project's dev loop settings. Holds only differences from the plugin's defaults.
+version: 1
+host:
+  provider: ado
+  org: null            # your organisation
+  project: null
+  repo: null
+  token_env: DEV_LOOP_HOST_TOKEN
+branches:
+  integration: main
+  remote: origin
+  release: null
+  protected: []
+  change_prefix: loop/
+paths:
+  changes: .dev-loop/changes
+  archive: .dev-loop/changes/archive
+  frozen: []
+# rules:
+#   generator: null    # a shell command that writes the guides' Do-not-repeat blocks instead
+#   check: null        # with a generator: the command that checks the blocks are current

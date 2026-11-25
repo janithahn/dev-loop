@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# The `dl` launcher. The source always runs from this plugin folder (so an update never leaves a
+# stale copy); the Python is the plugin's venv once dl-bootstrap finished it, else a Python that has
+# PyYAML ($DL_PYTHON, python3, python).
+root="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
+data="${CLAUDE_PLUGIN_DATA:-${CLAUDE_CONFIG_DIR:-$HOME/.claude}/plugins/data/dev-loop-dev-loop}"
+venv="$data/venv"
+py=""
+if [ -f "$venv/.ready" ]; then
+  for candidate in "$venv/bin/python" "$venv/Scripts/python.exe"; do
+    [ -x "$candidate" ] && { py="$candidate"; break; }
+  done
+fi
+if [ -z "$py" ]; then
+  for candidate in "${DL_PYTHON:-python3}" python; do
+    "$candidate" -c 'import yaml' 2>/dev/null && { py="$candidate"; break; }
+  done
+fi
+[ -n "$py" ] || { echo "dl: no Python with PyYAML; run $root/bin/dl-bootstrap" >&2; exit 2; }
+PYTHONPATH="$root/src${PYTHONPATH:+:$PYTHONPATH}" exec "$py" -m dev_loop "$@"

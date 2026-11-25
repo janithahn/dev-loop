@@ -1,0 +1,17 @@
+{
+  "name": "dev-loop",
+  "owner": {
+    "name": "janithahn"
+  },
+  "metadata": {
+    "description": "The dev loop: propose, plan, build, verify, review, done."
+  },
+  "plugins": [
+    {
+      "name": "dev-loop",
+      "source": "./plugins/dev-loop",
+      "description": "The dev loop: records, review loop, gates, hooks, agents.",
+      "version": "0.4.23"
+    }
+  ]
+}

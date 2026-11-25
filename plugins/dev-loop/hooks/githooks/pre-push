@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# The pipeline's cheap steps before every push (ci/prepush.sh says which). Runs as `dl githook pre-push`.
+exec bash "$(dirname "$0")/../../src/dev_loop/ci/prepush.sh" </dev/null

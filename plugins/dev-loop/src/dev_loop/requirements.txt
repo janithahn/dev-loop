@@ -1,0 +1,3 @@
+# The dev loop's one package beyond the stdlib: config.py reads defaults.yaml and the
+# project's dev-loop.yaml. The dashboard, config.py and pr-review.sh run on the host's python3.
+pyyaml>=6.0.3

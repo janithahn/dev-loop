@@ -1,0 +1,10 @@
+#!/usr/bin/env sh
+# Written by `dl init`. Test: tests/test_init_githook.py
+dl="$(command -v dl)"
+[ -n "$dl" ] || dl="$(ls -d "${CLAUDE_CONFIG_DIR:-$HOME/.claude}"/plugins/cache/dev-loop/dev-loop/*/bin/dl \
+  2>/dev/null | sort -V | tail -n 1)"
+if [ -z "$dl" ]; then
+  echo "dev-loop: dl not found, pre-commit checks NOT run (install the plugin or put its bin on PATH)" >&2
+  exit 0
+fi
+exec "$dl" githook pre-commit

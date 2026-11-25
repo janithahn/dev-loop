@@ -1,0 +1,28 @@
+# The project's dev loop settings. Holds only differences from the plugin's defaults.
+version: 1
+host:
+  provider: local
+  org: null            # your organisation
+  project: null
+  repo: null
+  token_env: DEV_LOOP_HOST_TOKEN
+branches:
+  integration: main
+  remote: hub          # the local bare remote; this project never pushes to a hosted platform
+  release: null
+  protected: []
+  change_prefix: loop/
+paths:
+  changes: .dev-loop/changes
+  archive: .dev-loop/changes/archive
+  frozen: []
+knowledge:
+  read_first: ["CLAUDE.md", "AGENTS.md", "ARCHITECTURE.md"]
+  guides: []           # discover found only the shipped templates, which are not area guides
+review:
+  fast_track: false
+verify:
+  steps:               # the whole suite, in parallel so it finishes well inside the step timeout
+    suite: >-
+      uv run -q --no-project --with pytest --with pytest-xdist --with pyyaml
+      python -m pytest plugins/dev-loop/tests -q -n auto

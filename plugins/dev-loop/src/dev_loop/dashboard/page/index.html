@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>dev-loop live</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="page.css">
+</head>
+<body>
+<header>
+  <span class="dot" id="live" title="waiting for the first answer"></span><h1>dev-loop · live</h1>
+  <span class="sub" id="sub">loading…</span>
+  <span class="alert" id="stale" role="alert" hidden></span>
+  <span class="spacer"></span>
+  <button class="btn" id="refreshBtn" title="Fetch the latest numbers now">Refresh</button>
+  <button class="btn" id="restartBtn" title="Read every transcript again and restart any stopped reader. Your caps and pauses are kept.">Restart</button>
+</header>
+<main>
+  <section class="panel">
+    <h2>Controls <span class="note">pause, resume and an agent's context cap (empty = its role's cap) · the hook enforces, this page only shows</span></h2>
+    <div class="ctrls"><span class="sub" id="hookStat"></span></div>
+  </section>
+  <section class="panel">
+    <h2>Sessions and agents</h2>
+    <table>
+      <thead><tr><th>Who</th><th>Status</th><th>Context</th><th class="r">Cost</th><th>Control</th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </section>
+  <section class="panel">
+    <h2>Settings <span class="note">saved to dev-loop.yaml · only changed values are kept · a changed model is written to the agent's file</span></h2>
+    <div id="cfg"></div>
+  </section>
+  <p class="sub">Cost is API-equivalent, not a bill: the API list price for the tokens used (a subscription login is not billed this way). Status: a pending tool call or an unanswered tool result means running, even while a long command writes nothing; no write for 60 min while pending means stalled. Only counts, model and tool names are read, never prompt or document text.</p>
+</main>
+<script type="module" src="main.js"></script>
+</body>
+</html>

@@ -1,0 +1,186 @@
+{
+  "keys": {
+    "branches": {
+      "change_prefix": "prefix",
+      "integration": "text",
+      "protected": "list",
+      "release": "text?",
+      "remote": "text"
+    },
+    "briefs": {
+      "agent_types": "list",
+      "change_line": "bool",
+      "enforce": "enforce",
+      "max_read_first": "positive",
+      "sections": "list"
+    },
+    "build": {
+      "parallel": "positive"
+    },
+    "caps": [
+      "enabled"
+    ],
+    "cleanup": {
+      "auto": "bool",
+      "cache_globs": "list",
+      "caches": "bool",
+      "docker": "bool",
+      "docker_label": "text?",
+      "keep_days": "positive",
+      "max_log_mb": "positive",
+      "threshold_pct": "number"
+    },
+    "context": [
+      "default",
+      "max",
+      "min"
+    ],
+    "fix_proves": {
+      "command": "text?",
+      "src": "list",
+      "tests": "list"
+    },
+    "gates": {
+      "ci_only": "patterns",
+      "on_edit": "text?",
+      "policy": "text?",
+      "sides": "map"
+    },
+    "handoff": [
+      "threshold"
+    ],
+    "host": {
+      "org": "text?",
+      "pr_footer": "text?",
+      "project": "text?",
+      "provider": "provider",
+      "repo": "text?",
+      "token_env": "text"
+    },
+    "knowledge": {
+      "decisions": "text",
+      "guides": "list",
+      "packages": "list",
+      "pitfalls": "text",
+      "read_first": "list",
+      "session_checklist": "text?"
+    },
+    "licences": {
+      "allow": "list"
+    },
+    "metrics": {
+      "deploy_pipeline": "text?"
+    },
+    "paths": {
+      "archive": "text",
+      "changes": "text",
+      "frozen": "list"
+    },
+    "records": {
+      "guard_moves": "map"
+    },
+    "release_gate": {
+      "block_on": "severities"
+    },
+    "review": {
+      "auto_trigger": "bool",
+      "examples": "text?",
+      "extra": "map",
+      "fallback": "fallback",
+      "fast_track": "bool",
+      "fast_track_fix": "list",
+      "governance": "list",
+      "model": "text?",
+      "runner": "text",
+      "runner_command": "text?",
+      "standards": "text?"
+    },
+    "reviewer": [
+      "max_turns",
+      "seconds",
+      "tools",
+      "usd"
+    ],
+    "roles": [
+      "agent_types",
+      "context",
+      "model",
+      "source"
+    ],
+    "routing": [
+      "kinds",
+      "paths"
+    ],
+    "size": {
+      "advise": "number",
+      "cap": "number",
+      "exclude": "list",
+      "generated": "list",
+      "production": "list"
+    },
+    "tasks": {
+      "cache": "text",
+      "tag": "text"
+    },
+    "verify": {
+      "affected": "text?",
+      "covers": "map",
+      "host_steps": "list",
+      "prepush": "list",
+      "runner": "text*",
+      "step_timeout_minutes": "positive",
+      "steps": "map"
+    },
+    "warnings": [
+      "running_hours"
+    ],
+    "workers": {
+      "accounts": "list",
+      "checkout": "text",
+      "default_base": "text?",
+      "default_role": "text",
+      "docker_slots": "positive",
+      "max_turns": "positive",
+      "may_run": "list",
+      "never": "list",
+      "poll_seconds": "positive",
+      "reach": "text*",
+      "slots": "positive",
+      "timeout_hours": "positive",
+      "worktrees": "text"
+    },
+    "rules": {
+      "generator": "text?",
+      "check": "text?"
+    }
+  },
+  "sections": [
+    "branches",
+    "briefs",
+    "build",
+    "caps",
+    "cleanup",
+    "fix_proves",
+    "gates",
+    "handoff",
+    "host",
+    "knowledge",
+    "licences",
+    "managers",
+    "metrics",
+    "paths",
+    "records",
+    "release_gate",
+    "review",
+    "roles",
+    "routing",
+    "rules",
+    "size",
+    "tasks",
+    "verify",
+    "version",
+    "warnings",
+    "workers"
+  ],
+  "version": 1
+}

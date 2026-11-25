@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+# Make the plugin's Python environment under ${CLAUDE_PLUGIN_DATA}: a venv holding PyYAML, the one
+# dependency (the source runs from the plugin folder, see bin/dl). `.ready` is written last, so a
+# half-made venv is never used. Idempotent. The venv is built on the hooks' own `python3` (uv too),
+# and a ready venv whose pyvenv.cfg names another Python version is rebuilt. It is built beside the
+# old one (venv.new) and moved in whole, so a build that fails leaves a ready venv as it was.
+set -euo pipefail
+data="${CLAUDE_PLUGIN_DATA:-${CLAUDE_CONFIG_DIR:-$HOME/.claude}/plugins/data/dev-loop-dev-loop}"
+venv="$data/venv"
+if [ -f "$venv/.ready" ]; then
+  want="$(python3 -c 'import sys; print("%d.%d" % sys.version_info[:2])' 2>/dev/null || true)"
+  have="$(sed -n -E 's/^version(_info)? *= *([0-9]+\.[0-9]+).*/\2/p' "$venv/pyvenv.cfg" \
+    2>/dev/null | head -n 1 || true)"
+  if [ -z "$want" ] || [ -z "$have" ] || [ "$want" = "$have" ]; then
+    echo "dl: environment ready at $venv"
+    exit 0
+  fi
+  echo "dl: $venv was built on Python $have, the hooks run $want: rebuilding" >&2
+fi
+command -v timeout >/dev/null 2>&1 || timeout() { shift; "$@"; }
+# ponytail: two first sessions at once share venv.new and one may fail; the next session rebuilds.
+# The moved venv's python and site-packages work (all dl uses); its pip script names the old path.
+new="$venv.new"
+rm -rf "$new"
+python_in() { if [ -x "$1/bin/python" ]; then echo "$1/bin/python"; else echo "$1/Scripts/python.exe"; fi; }
+if timeout 60 python3 -m venv "$new" >/dev/null 2>&1 \
+   && timeout 60 "$(python_in "$new")" -m pip install --quiet --retries 0 --timeout 10 \
+        "pyyaml>=6" >/dev/null 2>&1; then
+  :
+elif command -v uv >/dev/null 2>&1 && rm -rf "$new" \
+   && timeout 60 uv venv -q --python "$(command -v python3)" "$new" 2>/dev/null \
+   && UV_HTTP_TIMEOUT=10 UV_HTTP_RETRIES=0 timeout 60 uv pip install -q \
+        --python "$(python_in "$new")" "pyyaml>=6" 2>/dev/null; then
+  :
+else
+  rm -rf "$new"
+  if [ -f "$venv/.ready" ]; then
+    echo "dl: could not rebuild $venv (needs python3-venv or uv); the one there stays" >&2
+    exit 1
+  fi
+  rm -rf "$venv"  # never finished: a venv holding no PyYAML would hide the system's
+  echo "dl: could not create $venv (needs python3-venv or uv); dl uses a Python with PyYAML" >&2
+  exit 1
+fi
+touch "$new/.ready"
+rm -rf "$venv"
+mv "$new" "$venv"
+echo "dl: environment created at $venv"

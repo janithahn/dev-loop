@@ -1,0 +1,168 @@
+# The dev loop's shipped defaults. A project's dev-loop.yaml at the
+# repository root holds only its differences: mappings merge key by key, any other value (a list)
+# replaces the default whole. Unknown keys are refused. Read by scripts/dev_loop/config.py only.
+version: 1
+caps:
+  enabled: true              # false: no hand-off; pauses still apply
+handoff:
+  threshold: 0.9             # share of the context cap at which the hand-off opens (0.5-1.0)
+warnings:
+  running_hours: 4           # the "running > N h" pill, display only (1-72)
+paths:
+  changes: .dev-loop/changes             # one folder per change: proposal, tasks, records
+  archive: .dev-loop/changes/archive
+  frozen: []                 # globs of files no change edits (history kept as it was)
+branches:
+  integration: main          # the branch changes merge into
+  remote: origin             # the remote whose <integration> is the integration ref
+  release: null              # the branch integration is released to; null: none
+  protected: []              # branches nobody commits to directly
+  change_prefix: dev-loop/   # a hand-off names `handover` only on a branch with this prefix
+host:
+  provider: ado              # where pull requests live: ado or github
+  org: null
+  project: null
+  repo: null
+  token_env: DEV_LOOP_HOST_TOKEN # the variable holding the token when git holds none
+  pr_footer: null            # the line a PR body ends with; null: none
+knowledge:
+  read_first: []             # files an agent reads before the project's CLAUDE.md or AGENTS.md
+  pitfalls: REVIEW-PITFALLS.md
+  decisions: DECISIONS.md
+  guides: []                 # per-area guides that load as an agent works in a folder
+  packages: []
+  session_checklist: null
+size:
+  cap: 200                   # production lines per PR (50-1000)
+  advise: 100                # split advised above (10-200, at most cap)
+  production: []             # globs of hand-written production code that count
+  exclude: []                # globs that never count
+  generated: []              # globs of generated code that never counts
+review:
+  governance: []             # globs of files whose change the reviewer treats as policy
+  extra: {}                  # name: path of extra standards a review reads
+  standards: null            # the project's rubric overlay; null: the plugin's base only
+  examples: null             # a project file of worked review examples, appended after the base; null: none
+  auto_trigger: true         # a raised PR starts the review loop
+  fast_track: false          # true: one review round that fixes only fast_track_fix's classes
+  fallback: never            # never: land needs a real `dl review` run; subagent: a subagent round may stand in
+  fast_track_fix: [law, security, crash]  # the finding classes fast track still fixes
+  runner: claude             # the CLI the review runs on; another needs runner_command
+  model: null                # the review's model; null: the runner's own (claude: roles.reviewer)
+  runner_command: null  # e.g. "cli --model {model} --prompt-file {prompt}" (prints the verdict)
+verify:
+  runner: ""                 # the command that runs one step, e.g. "docker compose run app"
+  steps: {}                  # step name: command
+  affected: null             # command printing the tests a change affects (run after verify.runner, under the step timeout), filled into a step's {affected}; null: in full
+  host_steps: []             # step names run on the host, with no verify.runner prefix
+  covers: {}                 # step name: the globs it checks, space-separated; a changed size.production path none covers is red; {}: coverage not checked
+  prepush: []                # step names the pre-push check runs
+  step_timeout_minutes: 20   # a step running longer is killed with its children and failed
+fix_proves:                  # `dl ci fix-proves`: a fix's changed test fails on the base's source
+  src: []                    # globs of the source taken from the base
+  tests: []                  # globs of the test files a fix adds or changes
+  command: null              # the test command, run after verify.runner with the changed tests; it must write a junit report: at {report} when named, else --junitxml=<path> is added (pytest)
+gates:
+  sides: {}                  # side name: glob of the files it guards
+  on_edit: null              # command run after an edit; null: none
+  policy: null               # `dl land`: the Build policy whose name starts so; null: the one
+  ci_only: []                # regexes of commands only CI runs (CI or TF_BUILD set): a Bash
+                             # call whose simple command matches one is denied elsewhere
+release_gate:                # `dl ci release-gate`: lists open debt, red on these severities
+  block_on: [blocker]        # each of blocker, major, minor, unknown (a debt with none)
+licences:                    # `dl ci licences`: the SPDX ids a direct dependency may carry
+  allow: [MIT, BSD-2-Clause, BSD-3-Clause, Apache-2.0, ISC, PSF-2.0, Python-2.0, MPL-2.0]
+metrics:
+  deploy_pipeline: null      # the pipeline whose runs the delivery figures count
+cleanup:                     # `dl clean`: remove the loop's leftovers safely (dry run by default)
+  auto: true                 # false: no automatic clean after a task or at session end
+  keep_days: 3               # a finished run folder or temp cache older than this is removed
+  max_log_mb: 50             # a loop log over this is rotated, the newest part kept
+  threshold_pct: 80          # disk use at or above which a clean runs before a task; doctor red
+  docker: false              # opt-in: also remove Docker volumes and images carrying docker_label
+  docker_label: null         # the label the loop's Docker volumes and images carry
+  caches: false              # opt-in: also remove test caches under the system temp dir
+  cache_globs: [vitest-*, pytest-of-*]  # the temp cache folders caches removes
+records:
+  guard_moves: {}            # a lesson's old Guard path or glob -> its new project path, or
+                             # plugin:<test or hook name> when the guard now lives in the plugin
+rules:
+  generator: null           # a shell command that writes the guides' Do-not-repeat blocks
+                             # instead of the built-in writer; null: the built-in
+  check: null                # with a generator: the command `dl records rules` runs as its
+                             # staleness check (its exit status); null: no check, exit 0
+tasks:
+  tag: dev-loop-agent        # the work-item tag machine workers take
+  cache: ~/.dev-loop/tasks-{repo}.json
+build:
+  parallel: 4                # tasks a build runs at once (1 or more)
+briefs:                      # the contract every Agent call's prompt is checked against
+  sections: [Goal, Read first, Done when]  # headings a brief must have, each with a body
+  max_read_first: 6          # files the "Read first" section may list (1 or more)
+  enforce: block             # warn: say the gap and allow; block: refuse the call
+  agent_types: [dev-loop:builder, dev-loop:builder-backend, dev-loop:builder-frontend]
+  change_line: false         # true: a brief must have a Change line
+managers: []                 # names allowed to start and stop workers
+workers: {}                  # name: {checkout, worktrees, never: [globs], limits (schema.py);
+                             # optional may_run: [kinds], reach: text, accounts: []}
+routing:
+  kinds: {backend: "dev-loop:builder-backend", frontend: "dev-loop:builder-frontend"}
+  paths:                     # first match wins when a task has no Kind:
+    - {glob: "**/*.js", kind: frontend}
+    - {glob: "**/*.ts", kind: frontend}
+    - {glob: "**/*.tsx", kind: frontend}
+    - {glob: "**/*.css", kind: frontend}
+    - {glob: "**", kind: backend}
+# Each role: the agent types it governs, its model (null: any), and its context cap in tokens
+# (default, min, max: a launch may state its own, clamped into min..max). Only the context cap is
+# enforced; turns, seconds and cost are display only, except the headless reviewer's process limits.
+roles:
+  coordinator:
+    agent_types: []
+    model: claude-opus-5-5
+    context: null            # the main session: never capped
+    source: "a main or coordinator session is not a subagent and stays uncapped"
+  planner:
+    agent_types: ["dev-loop:planner"]
+    model: claude-opus-5-5
+    context: {default: 250000, min: 125000, max: 500000}
+    source: "the planner reads widely and writes the plans; the cap leaves room for the specs it reads (provisional, tune from your own runs)"
+  researcher:
+    agent_types: ["dev-loop:researcher"]
+    model: claude-opus-5-5
+    context: {default: 200000, min: 100000, max: 400000}
+    source: "the researcher writes only its findings file; the cap bounds what it reads (provisional, tune from your own runs)"
+  builder-backend:
+    agent_types: ["dev-loop:builder-backend"]
+    model: claude-opus-5-5
+    context: {default: 200000, min: 100000, max: 400000}
+    source: "a builder works one task at a time; the cap keeps its context in the range where quality holds (provisional, tune from your own runs)"
+  builder-frontend:
+    agent_types: ["dev-loop:builder-frontend", "dev-loop:builder"]
+    model: claude-sonnet-5-5
+    context: {default: 200000, min: 100000, max: 400000}
+    source: "a builder works one task at a time; the cap keeps its context in the range where quality holds (provisional); `builder` is its alias"
+  reviewer:
+    agent_types: ["dev-loop:code-reviewer"]
+    model: claude-opus-5-5
+    context: {default: 150000, min: 75000, max: 300000}
+    max_turns: 12            # the headless review call's process limits
+    seconds: 960
+    usd: 6
+    tools: [Read, Grep, Glob]
+    source: "the headless review call is bounded in turns, seconds and cost, and its tools are read-only (the review step refuses any other); the cap is provisional, tune from your own runs"
+  review-fixer:
+    agent_types: ["dev-loop:review-fixer"]
+    model: claude-opus-5-5
+    context: {default: 200000, min: 100000, max: 400000}
+    source: "the review loop's worker runs the rounds and fixes the blockers and majors in the forked review skill; the cap is provisional, tune from your own runs"
+  simplifier:
+    agent_types: ["code-simplifier:code-simplifier", "pr-review-toolkit:code-simplifier"]
+    model: null
+    context: {default: 120000, min: 60000, max: 240000}
+    source: "the simplifier reads one finished diff; the cap is provisional, tune from your own runs"
+  general:
+    agent_types: ["*"]
+    model: null
+    context: {default: 200000, min: 100000, max: 400000}
+    source: "the fallback for any subagent whose type no role names: no subagent runs uncapped"

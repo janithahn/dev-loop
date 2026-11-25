@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dev-loop"
+version = "0.4.23"
+description = "The dev loop's command line (`dl`), shared by the Claude Code plugin, githooks and CI."
+requires-python = ">=3.12"
+dependencies = ["pyyaml>=6"]
+
+[project.scripts]
+# `dev_loop.__main__:main` (the subcommand dispatch) lands later.
+dl = "dev_loop.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["plugins/dev-loop/src"]
+
+[tool.setuptools.package-data]
+"*" = ["*.yaml", "*.txt", "*.md", "*.json", "*.sh", "*.js", "*.css", "*.html"]

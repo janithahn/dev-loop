@@ -1,0 +1,45 @@
+# The dev loop's CI steps for an Azure Pipelines job. Include it from the project's pipeline:
+#   steps:
+#     - template: ci/dev-loop-steps.yml
+#       parameters: {repo: $(devLoopRepo), tag: v0.1.0}
+# `repo` is the plugin repository's git URL (a variable, never written here); `tag` is the pinned
+# release, the same as the project's .claude/settings.json pins (pin-check compares them).
+# The diff steps judge against origin/<branches.integration> (dev-loop.yaml); fetch it first.
+# Each step exits with the code of what it wraps; a step that cannot run is red, never green.
+parameters:
+  - name: repo
+    type: string
+  - name: tag
+    type: string
+
+steps:
+  - script: |
+      set -eu
+      python -m pip install --quiet "dev-loop @ git+${{ parameters.repo }}@${{ parameters.tag }}"
+      git clone --quiet --depth 1 --branch "${{ parameters.tag }}" "${{ parameters.repo }}" \
+        "$(Agent.TempDirectory)/dev-loop"
+      echo "##vso[task.setvariable variable=CLAUDE_PLUGIN_ROOT]$(Agent.TempDirectory)/dev-loop/plugins/dev-loop"
+    displayName: dev-loop install ${{ parameters.tag }}
+  - script: dl ci pin-check --tag "${{ parameters.tag }}"
+    displayName: dev-loop pin check
+  - script: dl ci size-cap
+    displayName: dev-loop size cap
+  - script: dl ci records-current
+    displayName: dev-loop records current
+  - script: dl ci rules-current
+    displayName: dev-loop rules current
+  - script: dl ci unparsed
+    displayName: dev-loop unparsed records
+  - script: dl ci done-rule
+    displayName: dev-loop done rule (the changes the PR touches)
+  - script: dl ci verdict-selftest
+    displayName: dev-loop verdict self-test
+  - script: dl ci hooks-selftest
+    displayName: dev-loop hooks self-test
+  - script: dl ci secret-scan
+    displayName: dev-loop secret scan
+  - script: dl ci licences
+    displayName: dev-loop dependency licences
+  - script: dl ci release-gate       # a release step: run the pipeline by hand to release
+    displayName: dev-loop release gate
+    condition: and(succeeded(), eq(variables['Build.Reason'], 'Manual'))

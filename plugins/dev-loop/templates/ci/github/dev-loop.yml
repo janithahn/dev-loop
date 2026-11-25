@@ -1,0 +1,53 @@
+# The dev loop's CI steps for GitHub Actions, the same steps as the Azure template.
+# DEV_LOOP_REPO is the plugin repository's git URL: set it as a repository variable (Settings >
+# Variables); it is never written here. DEV_LOOP_TAG is the pinned release, the same as the
+# project's .claude/settings.json pins (pin-check compares them); `dl init` writes it.
+# The diff steps judge against origin/<branches.integration> (dev-loop.yaml): full history below.
+# Each step exits with the code of what it wraps; a step that cannot run is red, never green.
+name: dev-loop
+on:
+  pull_request:
+  workflow_dispatch:         # a release: run the workflow by hand; it adds the release gate
+env:
+  DEV_LOOP_REPO: ${{ vars.DEV_LOOP_REPO }}
+  DEV_LOOP_TAG: "{{tag}}"
+jobs:
+  dev-loop:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: dev-loop install
+        run: |
+          set -eu
+          python -m pip install --quiet "dev-loop @ git+${DEV_LOOP_REPO}@${DEV_LOOP_TAG}"
+          git clone --quiet --depth 1 --branch "$DEV_LOOP_TAG" "$DEV_LOOP_REPO" \
+            "$RUNNER_TEMP/dev-loop"
+          echo "CLAUDE_PLUGIN_ROOT=$RUNNER_TEMP/dev-loop/plugins/dev-loop" >> "$GITHUB_ENV"
+      - name: dev-loop pin check
+        run: dl ci pin-check --tag "$DEV_LOOP_TAG"
+      - name: dev-loop size cap
+        run: dl ci size-cap
+      - name: dev-loop records current
+        run: dl ci records-current
+      - name: dev-loop rules current
+        run: dl ci rules-current
+      - name: dev-loop unparsed records
+        run: dl ci unparsed
+      - name: dev-loop done rule (the changes the PR touches)
+        run: dl ci done-rule
+      - name: dev-loop verdict self-test
+        run: dl ci verdict-selftest
+      - name: dev-loop hooks self-test
+        run: dl ci hooks-selftest
+      - name: dev-loop secret scan
+        run: dl ci secret-scan
+      - name: dev-loop dependency licences
+        run: dl ci licences
+      - name: dev-loop release gate
+        if: github.event_name == 'workflow_dispatch'
+        run: dl ci release-gate

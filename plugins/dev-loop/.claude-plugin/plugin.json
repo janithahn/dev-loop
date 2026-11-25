@@ -1,0 +1,10 @@
+{
+  "name": "dev-loop",
+  "version": "0.4.23",
+  "types": "./hooks/settings-state.d.ts",
+  "repository": "https://github.com/janithahn/dev-loop",
+  "description": "The dev loop: change records, the PR review loop, size and gate checks, session hooks and role agents. Commands: /dev-loop:*.",
+  "author": {
+    "name": "janithahn"
+  }
+}

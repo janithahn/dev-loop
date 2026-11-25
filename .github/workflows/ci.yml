@@ -1,0 +1,28 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: python -m pip install -e . pytest pytest-xdist
+      - name: Tests (versions, manifest shape, neutrality, the rest)
+        run: python -m pytest plugins/dev-loop/tests -q -n auto
+      - name: Validate the plugin and the marketplace
+        run: |
+          if npm install -g @anthropic-ai/claude-code; then
+            claude plugin validate plugins/dev-loop --strict
+            claude plugin validate . --strict
+          else
+            echo "claude CLI not installable: the manifest shape was checked by test_versions.py"
+          fi

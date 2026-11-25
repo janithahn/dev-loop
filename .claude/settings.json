@@ -1,0 +1,15 @@
+{
+  "extraKnownMarketplaces": {
+    "dev-loop": {
+      "source": {
+        "source": "github",
+        "repo": "janithahn/dev-loop",
+        "ref": "v0.4.1"
+      },
+      "autoUpdate": false
+    }
+  },
+  "enabledPlugins": {
+    "dev-loop@dev-loop": true
+  }
+}
